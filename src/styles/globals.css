@@ -1,0 +1,267 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-ink: #0b0b0c;
+  --color-paper: #d9d9d8;
+  --color-ash: #6c6c6a;
+
+  /*
+   * SF Pro cannot be self-hosted — Apple's licence forbids redistributing it
+   * as a webfont — but -apple-system resolves to the real SF Pro on macOS and
+   * iOS, and degrades to each platform's system UI face elsewhere.
+   */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    "Helvetica Neue", system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+
+  /* The mark itself as the pointer — 17x30, with the white outline baked into
+     the PNG since filters don't apply to cursors. The second declaration
+     upgrades it on hi-dpi where image-set() is supported. */
+  cursor: url(/cursor.png) 8 15, auto;
+  cursor:
+    image-set(url(/cursor.png) 1x, url(/cursor@2x.png) 2x) 8 15,
+    auto;
+}
+
+/* Touch devices have no pointer to restyle, and a custom cursor there just
+   costs a download. */
+@media (pointer: coarse) {
+  body {
+    cursor: auto;
+  }
+}
+
+::selection {
+  background-color: var(--color-ink);
+  color: var(--color-paper);
+}
+
+/* ---------------------------------------------------------------- *
+ * Stage
+ *
+ * The artwork is 1672x941. Deriving positions from the rectangle that
+ * photo covers means each element keeps its spot relative to the
+ * subject at any viewport size, instead of drifting onto his face.
+ * ---------------------------------------------------------------- */
+
+.stage {
+  --cover-w: max(100vw, calc(100svh * 1672 / 941));
+  --cover-h: calc(var(--cover-w) * 941 / 1672);
+
+  /* Head: silhouette centres on 49.6% of the width, crown at 23% of the
+     height, left edge at 41%. */
+  --logo-size: clamp(40px, calc(var(--cover-w) * 0.06), 104px);
+  --logo-left: calc(50vw - var(--cover-w) * 0.004 - var(--logo-size) / 2);
+  --logo-top: max(10px, calc(50svh - var(--cover-h) * 0.406));
+
+  /* Card is anchored by its right edge so it hugs the head no matter how
+     wide its contents end up. */
+  --card-right: calc(50vw + var(--cover-w) * 0.115);
+  --card-top: calc(50svh - var(--cover-h) * 0.07);
+
+  --name-size: clamp(16px, calc(var(--cover-w) * 0.021), 32px);
+  --role-size: clamp(10px, calc(var(--cover-w) * 0.0098), 15px);
+  --icon-size: clamp(26px, calc(var(--cover-w) * 0.029), 44px);
+
+  --links-color: var(--color-ink);
+}
+
+.stage-logo {
+  position: absolute;
+  left: var(--logo-left);
+  top: var(--logo-top);
+  width: var(--logo-size);
+}
+
+.stage-card {
+  position: absolute;
+  right: var(--card-right);
+  top: var(--card-top);
+  transform: translateY(-50%);
+}
+
+.stage-links {
+  display: flex;
+  gap: calc(var(--icon-size) * 0.45);
+  color: var(--links-color);
+}
+
+/* Portrait: the photo crops down to little more than the head, so the card
+   moves to the bottom where there is still room. */
+@media (max-aspect-ratio: 1/1) {
+  .stage {
+    --logo-size: 54px;
+    --logo-left: calc(50vw - var(--logo-size) / 2);
+    --logo-top: 24px;
+
+    --name-size: 24px;
+    --role-size: 13px;
+    --icon-size: 34px;
+  }
+
+  .stage-card {
+    right: auto;
+    left: 50%;
+    top: auto;
+    bottom: max(30px, calc(env(safe-area-inset-bottom) + 20px));
+    transform: translateX(-50%);
+    text-align: center;
+  }
+
+  .stage-links {
+    justify-content: center;
+  }
+
+  /* Down here the card lands on the black jacket, where a mostly transparent
+     tint would leave the dark text unreadable. */
+  .stage-card > * {
+    background: linear-gradient(
+      158deg,
+      rgba(255, 255, 255, 0.88) 0%,
+      rgba(255, 255, 255, 0.68) 46%,
+      rgba(255, 255, 255, 0.82) 100%
+    );
+  }
+}
+
+/* ---------------------------------------------------------------- *
+ * Liquid glass
+ * ---------------------------------------------------------------- */
+
+@utility glass {
+  /* Two stops of sheen baked into the background rather than a pseudo
+     element, so it never paints over the content it sits behind. */
+  background:
+    linear-gradient(
+      158deg,
+      rgba(255, 255, 255, 0.55) 0%,
+      rgba(255, 255, 255, 0.14) 46%,
+      rgba(255, 255, 255, 0.3) 100%
+    );
+  backdrop-filter: blur(22px) saturate(185%);
+  -webkit-backdrop-filter: blur(22px) saturate(185%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 12px 34px -10px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.25);
+}
+
+/* ---------------------------------------------------------------- *
+ * macOS window chrome
+ * ---------------------------------------------------------------- */
+
+@utility mac-window {
+  background: rgba(245, 245, 247, 0.72);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 0.5px solid rgba(0, 0, 0, 0.16);
+  box-shadow:
+    0 26px 64px -14px rgba(0, 0, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.12),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.7);
+}
+
+@utility mac-titlebar {
+  background: linear-gradient(
+    rgba(255, 255, 255, 0.55),
+    rgba(255, 255, 255, 0.16)
+  );
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.12);
+}
+
+/* ---------------------------------------------------------------- *
+ * Entrance
+ * ---------------------------------------------------------------- */
+
+@keyframes curtain {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes settle {
+  from {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@utility curtain {
+  animation: curtain 1100ms cubic-bezier(0.4, 0, 0.2, 1) 200ms both;
+}
+
+@utility settle {
+  animation: settle 2000ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/*
+ * The card and logo are positioned with transforms, so their reveal animates
+ * opacity and blur only — animating `transform` here would fight the layout.
+ */
+@keyframes rise-fade {
+  from {
+    opacity: 0;
+    filter: blur(7px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@utility rise {
+  animation: rise-fade 1000ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+/* Equaliser bars on the Spotify card. */
+@keyframes bar {
+  0%,
+  100% {
+    transform: scaleY(0.25);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+/*
+ * Honour the OS setting for the autoplaying entrance, but keep the hover spin:
+ * it only runs when the visitor points at something, and blanking every
+ * transition made hovering feel broken.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

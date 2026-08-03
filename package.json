@@ -1,0 +1,48 @@
+{
+  "name": "v1tor.com",
+  "version": "1.0.0",
+  "description": "Personal site of v1tor \u2014 Software Developer.",
+  "homepage": "https://v1tor.com",
+  "license": "MIT",
+  "private": true,
+  "author": {
+    "name": "v1tor",
+    "url": "https://github.com/jvittor"
+  },
+  "scripts": {
+    "dev": "next dev -p 1408",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit --pretty"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "geist": "^1.7.0",
+    "next": "16.1.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "sharp": "^0.34.3",
+    "tailwind-merge": "^3.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.0",
+    "@types/node": "^20.14.12",
+    "@types/react": "19.2.10",
+    "@types/react-dom": "19.2.3",
+    "eslint": "^9.22.0",
+    "eslint-config-next": "16.1.6",
+    "tailwindcss": "^4.2.0",
+    "typescript": "5.8.3"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp",
+      "unrs-resolver"
+    ]
+  },
+  "packageManager": "pnpm@10.30.1"
+}
