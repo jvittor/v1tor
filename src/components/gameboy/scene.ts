@@ -16,7 +16,11 @@ const SELECT = { x: -0.196, y: -0.628 }
 const START = { x: 0.02, y: -0.628 }
 
 /** Centro do Game Boy e da moldura da tela. */
-const BODY_CENTER = new THREE.Vector3(0, -0.02, 0)
+/** Um pouco acima do meio, pra caber o gato sentado no topo. */
+const BODY_CENTER = new THREE.Vector3(0, 0.2, 0)
+/** Topo do Game Boy, onde o gato senta, e a altura dele. */
+const CAT_SEAT = new THREE.Vector3(0.36, 1.075, 0.03)
+const CAT_HEIGHT = 0.5
 const SCREEN_CENTER = new THREE.Vector3(-0.015, 0.52, 0.16)
 const HANDHELD = new THREE.Vector3(0, 0.02, 0.16)
 
@@ -90,6 +94,33 @@ export function mountScene(container: HTMLElement, screen: Screen, ev: SceneEven
   texture.anisotropy = renderer.capabilities.getMaxAnisotropy()
 
   let body: THREE.Mesh | null = null
+  let mixer: THREE.AnimationMixer | null = null
+
+  /*
+   * O gato mago sentado no canto de cima à direita. Fica pendurado no próprio
+   * Game Boy, então sobe e gira junto. Escala e posição saem da caixa dele,
+   * porque o arquivo vem num tamanho qualquer.
+   */
+  function loadCat(parent: THREE.Object3D) {
+    new GLTFLoader().load("/models/wizard-cat.glb", (gltf) => {
+      const cat = gltf.scene
+      const box = new THREE.Box3().setFromObject(cat)
+      const size = box.getSize(new THREE.Vector3())
+      const s = CAT_HEIGHT / size.y
+      cat.scale.setScalar(s)
+      const center = box.getCenter(new THREE.Vector3())
+      cat.position.set(CAT_SEAT.x - center.x * s, CAT_SEAT.y - box.min.y * s, CAT_SEAT.z - center.z * s)
+      cat.rotation.y = -0.35
+      cat.traverse((o) => {
+        if (o instanceof THREE.Mesh) o.frustumCulled = false
+      })
+      parent.add(cat)
+      if (gltf.animations.length) {
+        mixer = new THREE.AnimationMixer(cat)
+        mixer.clipAction(gltf.animations[0]).play()
+      }
+    })
+  }
   let model: THREE.Object3D | null = null
   let display: THREE.Mesh | null = null
 
@@ -120,6 +151,7 @@ export function mountScene(container: HTMLElement, screen: Screen, ev: SceneEven
     })
     rig.add(gltf.scene)
     model = gltf.scene
+    loadCat(gltf.scene)
     // HOLD segura o mar de nuvens sozinho na tela antes da subida. Em zero, ele
     // começa a subir assim que o modelo chega.
     landedAt = Math.max(performance.now(), mountedAt + HOLD)
@@ -149,7 +181,7 @@ export function mountScene(container: HTMLElement, screen: Screen, ev: SceneEven
       const d = Math.max(0.74 / TAN, 0.62 / (TAN * aspect))
       return { t: SCREEN_CENTER, d }
     }
-    const d = Math.max(1.28 / TAN, 0.8 / (TAN * aspect))
+    const d = Math.max(1.58 / TAN, 0.8 / (TAN * aspect))
     return { t: BODY_CENTER, d }
   }
 
@@ -302,6 +334,7 @@ export function mountScene(container: HTMLElement, screen: Screen, ev: SceneEven
     }
     clouds.update(dt, ease, zoomed)
 
+    mixer?.update(dt)
     if (screen.update(now)) texture.needsUpdate = true
     renderer.render(scene, camera)
   }

@@ -225,6 +225,7 @@ export class Screen {
       { label: "GITHUB", open: () => this.github() },
       { label: "LINKEDIN", open: () => this.linkedin() },
       { label: "RÁDIO", open: () => this.radioPage() },
+      { label: "CRÉDITOS", open: () => this.creditos() },
     ])
   }
 
@@ -275,6 +276,14 @@ export class Screen {
       "LINKEDIN",
       "linkedin.com/in/\njvittor\n\nHistórico completo, recomendações e contato.",
       this.link(LINKS.linkedin, "A ABRE O PERFIL")
+    )
+  }
+
+  /** As duas licenças dos modelos pedem crédito ao autor. */
+  private creditos(): TextPage {
+    return text(
+      "CRÉDITOS",
+      "GAME BOY 3D\nAtTheSpeedOf\nCC BY-NC 4.0\n\nGATO MAGO\nCass Cole\nCC BY 4.0\n\nModelos do Sketchfab, com textura mexida por mim."
     )
   }
 
