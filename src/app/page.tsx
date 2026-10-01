@@ -1,38 +1,52 @@
-import { ConsentToast } from "@/components/consent-toast"
-import { ProfileCard } from "@/components/profile-card"
-import { Sigil } from "@/components/sigil"
+import { Press_Start_2P } from "next/font/google"
+import { preload } from "react-dom"
+
+import { GameBoy } from "@/components/gameboy/game-boy"
+import { EXPERIENCIAS } from "@/content/curriculo"
+import { PROJETOS } from "@/content/projetos"
 import { getGitHubProfile } from "@/lib/github"
-import { SITE } from "@/lib/site"
+import { LINKS, SITE } from "@/lib/site"
+
+const pixel = Press_Start_2P({
+  weight: "400",
+  subsets: ["latin", "latin-ext"],
+  display: "block",
+})
 
 export default async function Page() {
+  // O modelo começa a baixar junto com o HTML, sem esperar o JavaScript.
+  preload("/models/gameboy.glb", { as: "fetch", crossOrigin: "anonymous" })
   const profile = await getGitHubProfile()
 
   return (
-    <main className="stage relative h-svh w-full overflow-hidden bg-paper">
-      <h1 className="sr-only">
-        {SITE.name} — {SITE.role}
-      </h1>
-
-      <div className="settle absolute inset-0">
-        <img
-          src="/background1.png"
-          sizes="100vw"
-          alt=""
-          fetchPriority="high"
-          decoding="async"
-          className="size-full object-cover object-center"
-        />
+    <main
+      className={`${pixel.className} retro relative h-svh w-full overflow-hidden select-none`}
+    >
+      {/* O canvas não é lido por leitor de tela nem por buscador. */}
+      <div className="sr-only">
+        <h1>
+          {SITE.fullName}, {SITE.role}
+        </h1>
+        <h2>Projetos</h2>
+        <ul>
+          {PROJETOS.map((p) => (
+            <li key={p.repo}>
+              <a href={p.repo}>{p.nome}</a>: {p.sobre}
+            </li>
+          ))}
+        </ul>
+        <h2>Experiência</h2>
+        <ul>
+          {EXPERIENCIAS.map((e) => (
+            <li key={e.nome}>
+              {e.nome}, {e.cargo}, {e.periodo}. {e.texto}
+            </li>
+          ))}
+        </ul>
+        <a href={LINKS.github}>GitHub</a> <a href={LINKS.linkedin}>LinkedIn</a>
       </div>
 
-      <Sigil />
-      <ProfileCard profile={profile} />
-      <ConsentToast />
-
-      {/* Lifts away once the first paint lands. */}
-      <div
-        aria-hidden
-        className="curtain pointer-events-none fixed inset-0 z-50 bg-paper"
-      />
+      <GameBoy profile={profile} font={pixel.style.fontFamily} />
     </main>
   )
 }

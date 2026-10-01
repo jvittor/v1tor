@@ -6,7 +6,7 @@ export const SITE = {
   title: "v1tor",
   role: "Software Engineer",
   location: "Worldwide",
-  description: "Vítor Silv — Software Engineer. Worldwide.",
+  description: "Vítor Silv, Software Engineer. Portfólio dentro de um Game Boy.",
 } as const
 
 export const LINKS = {

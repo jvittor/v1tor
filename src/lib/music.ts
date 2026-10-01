@@ -11,7 +11,7 @@ export type Track = {
 export type LyricLine = { time: number; text: string }
 
 const MUSIC_DIR = path.join(process.cwd(), "public", "music")
-const VIDEO_EXT = new Set([".mp4", ".webm", ".mov", ".m4v"])
+const MEDIA_EXT = new Set([".mp4", ".webm", ".mov", ".m4v", ".mp3", ".m4a", ".ogg", ".opus", ".wav", ".flac"])
 
 /**
  * Filenames are the only metadata we have, and they follow the usual
@@ -47,7 +47,7 @@ export async function listTracks(): Promise<Track[]> {
   try {
     const files = await fs.readdir(MUSIC_DIR)
     return files
-      .filter((f) => !f.startsWith(".") && VIDEO_EXT.has(path.extname(f).toLowerCase()))
+      .filter((f) => !f.startsWith(".") && MEDIA_EXT.has(path.extname(f).toLowerCase()))
       .sort()
       .map((file) => ({
         file,
